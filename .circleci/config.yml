@@ -1,6 +1,23 @@
 version: 2.1
 
 jobs:
+  get_last_deployment_id:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Fetch and save the old pipeline ID (bucket name) responsible for the last release.
+          command: |
+            aws cloudformation \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" --region us-east-1 \
+            --no-paginate --output text > ~/textfile.txt
+      - persist_to_workspace:
+          root: ~/
+          paths: 
+            - textfile.txt
+            
   create_and_deploy_front_end:
     docker:
       - image: amazon/aws-cli
@@ -23,22 +40,7 @@ jobs:
           command: |
             aws s3 cp index.html s3://atasync1/
 
-  get_last_deployment_id:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run: yum install -y tar gzip
-      - run:
-          name: Fetch and save the old pipeline ID (bucket name) responsible for the last release.
-          command: |
-            aws cloudformation \
-            list-exports --query "Exports[?Name==\`PipelineID\`].Value" --region us-east-1 \
-            --no-paginate --output text > ~/textfile.txt
-      - persist_to_workspace:
-          root: ~/
-          paths: 
-            - textfile.txt
+
   # Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`. 
   # Notice here we use the stack name `production-distro` which is the same name we used while deploying to the S3 bucket manually.
   promote_to_production:
@@ -70,7 +72,7 @@ jobs:
           command: |
             export OldBucketID=$(cat ~/textfile.txt)
             aws s3 rm "s3://${OldBucketID}" --recursive
-
+            aws cloudformation delete-stack --stack-name stack-create-bucket-${OldBucketID}
           #  aws cloudformation delete-stack --stack-name production-distro 
           #  aws cloudformation delete-stack --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7}
           #  aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
