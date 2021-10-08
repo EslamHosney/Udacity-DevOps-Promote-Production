@@ -24,7 +24,7 @@ jobs:
           name: Fetch and save the old pipeline ID (bucket name) responsible for the last release.
           command: |
             aws cloudformation \
-            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" --region us-east-1 \
             --no-paginate --output text > ~/textfile.txt
       - persist_to_workspace:
           root: ~/
@@ -61,8 +61,8 @@ jobs:
           command: |
             export OldBucketID=$(cat ~/textfile.txt)
             aws s3 rm "s3://${OldBucketID}" --recursive
-          #  aws cloudformation delete-stack --stack-name production-distro 
-          #  aws cloudformation delete-stack --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name production-distro 
+            aws cloudformation delete-stack --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7}
           #  aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
 
 
@@ -77,3 +77,6 @@ workflows:
       - promote_to_production:
           requires:
             - get_last_deployment_id
+      - clean_up_old_front_end
+          requires:
+            - promote_to_production
