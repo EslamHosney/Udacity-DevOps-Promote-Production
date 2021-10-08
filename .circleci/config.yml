@@ -12,11 +12,26 @@ jobs:
           command: |
             aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" --region us-east-1 \
-            --no-paginate --output text > ~/textfile.txt
+            --no-paginate --output text > ~/oldBucketID.txt
       - persist_to_workspace:
           root: ~/
           paths: 
-            - textfile.txt
+            - oldBucketID.txt
+            
+  put_current_workflow_id:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Fetch and save the current workflow for future use ISA
+          command: |
+            echo ${CIRCLE_WORKFLOW_ID:0:7} > ~/oldworkflowID.txt
+      - persist_to_workspace:
+          root: ~/
+          paths: 
+            - oldworkflowID.txt
 
   create_and_deploy_front_end:
     docker:
@@ -70,7 +85,7 @@ jobs:
           # Use $OldBucketID environment variable or mybucket644752792305 below.
           # Similarly, you can create and use $OldStackID environment variable in place of production-distro 
           command: |
-            export OldBucketID=$(cat ~/textfile.txt)
+            export OldBucketID=$(cat ~/oldBucketID.txt)
             aws s3 rm "s3://${OldBucketID}" --recursive
             aws cloudformation delete-stack --stack-name stack-create-bucket-${OldBucketID}
           #  aws cloudformation delete-stack --stack-name production-distro 
