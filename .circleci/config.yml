@@ -78,7 +78,7 @@ jobs:
           #  aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
 
 
-# Invoke jobs via workflows comment
+# Invoke jobs via workflows
 workflows:
   Promote-Production-Workflow:
     jobs:
