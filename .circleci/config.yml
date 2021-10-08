@@ -17,7 +17,7 @@ jobs:
           root: ~/
           paths: 
             - textfile.txt
-            
+
   create_and_deploy_front_end:
     docker:
       - image: amazon/aws-cli
@@ -38,7 +38,7 @@ jobs:
       - run:
           name: Upload index.html to new S3
           command: |
-            aws s3 cp index.html s3://atasync1/
+            aws s3 cp index.html s3://bucket-${CIRCLE_WORKFLOW_ID:0:7}/
 
 
   # Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`. 
@@ -86,9 +86,12 @@ workflows:
       - create_and_deploy_front_end:
           requires:
             - get_last_deployment_id
+      - upload_file_S3:
+          requires:
+            - create_and_deploy_front_end        
       - promote_to_production:
           requires:
-            - create_and_deploy_front_end
+            - upload_file_S3
       - clean_up_old_front_end:
           requires:
             - promote_to_production
