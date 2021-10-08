@@ -13,7 +13,7 @@ jobs:
             --template-file bucket.yml \
             --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
             --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
-   upload_file_S3:
+  upload_file_S3:
     docker:
       - image: amazon/aws-cli
     steps:
@@ -21,10 +21,7 @@ jobs:
       - run:
           name: Upload index.html to new S3
           command: |
-            aws cloudformation deploy \
-            --template-file bucket.yml \
-            --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7} \
-            --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws s3 cp index.html s3://atasync1/
 
   get_last_deployment_id:
     docker:
@@ -73,7 +70,7 @@ jobs:
           command: |
             export OldBucketID=$(cat ~/textfile.txt)
             aws s3 rm "s3://${OldBucketID}" --recursive
-            
+
           #  aws cloudformation delete-stack --stack-name production-distro 
           #  aws cloudformation delete-stack --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7}
           #  aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
