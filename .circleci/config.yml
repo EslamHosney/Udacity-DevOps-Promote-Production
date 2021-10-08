@@ -38,7 +38,7 @@ jobs:
       - run:
           name: Upload index.html to new S3
           command: |
-            aws s3 cp index.html s3://bucket-${CIRCLE_WORKFLOW_ID:0:7}/
+            aws s3 cp index.html s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7}/
 
 
   # Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`. 
@@ -80,7 +80,7 @@ jobs:
 
 # Invoke jobs via workflows comment
 workflows:
-  say-hello-workflow:
+  Promote-Production-Workflow:
     jobs:
       - get_last_deployment_id
       - create_and_deploy_front_end:
