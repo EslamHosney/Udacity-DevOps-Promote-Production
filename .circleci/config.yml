@@ -87,8 +87,8 @@ jobs:
           command: |
             export OldBucketID=$(cat ~/oldBucketID.txt)
             export oldworkflowID=$(cat ~/oldworkflowID.txt)
-          #  aws s3 rm "s3://${OldBucketID}" --recursive
-          #  aws cloudformation delete-stack --stack-name stack-create-bucket-${oldworkflowID}
+            aws s3 rm "s3://${OldBucketID}" --recursive
+            aws cloudformation delete-stack --stack-name stack-create-bucket-${oldworkflowID}
           #  aws cloudformation delete-stack --stack-name production-distro 
           #  aws cloudformation delete-stack --stack-name stack-create-bucket-${CIRCLE_WORKFLOW_ID:0:7}
           #  aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
